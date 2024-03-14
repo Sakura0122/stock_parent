@@ -1,5 +1,8 @@
 package com.sakura.stock.config;
 
+import com.sakura.stock.pojo.vo.StockInfoConfig;
+import com.sakura.stock.utils.IdWorker;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @description: 公共配置bean
  */
 @Configuration
+@EnableConfigurationProperties({StockInfoConfig.class})
 public class CommonConfig {
     /**
      * 密码加密器
@@ -20,5 +24,15 @@ public class CommonConfig {
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * 基于雪花算法的ID生成器
+     * @return
+     */
+    @Bean
+    public IdWorker idWorker(){
+        // 由运维人员指定
+        return new IdWorker(1L, 2L);
     }
 }

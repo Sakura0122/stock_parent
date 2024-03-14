@@ -1,6 +1,11 @@
 package com.sakura.stock.mapper;
 
+import com.sakura.stock.pojo.domain.InnerMarketDomain;
 import com.sakura.stock.pojo.entity.StockMarketIndexInfo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
 
 /**
 * @author sakura
@@ -22,4 +27,11 @@ public interface StockMarketIndexInfoMapper {
 
     int updateByPrimaryKey(StockMarketIndexInfo record);
 
+    /**
+     * 获取大盘信息
+     * @param date 指定时间点
+     * @param marketCodes 大盘编码集合
+     * @return
+     */
+    List<InnerMarketDomain> getMarketInfo(@Param("date") Date date, @Param("marketCodes") List<String> marketCodes);
 }

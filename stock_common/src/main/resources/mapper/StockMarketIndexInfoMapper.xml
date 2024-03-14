@@ -29,12 +29,30 @@
         select
         <include refid="Base_Column_List" />
         from stock_market_index_info
-        where  id = #{id,jdbcType=BIGINT} 
+        where  id = #{id,jdbcType=BIGINT}
     </select>
 
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+  <select id="getMarketInfo" resultType="com.sakura.stock.pojo.domain.InnerMarketDomain">
+    select market_code as code,
+    market_name as name,
+    open_point as openPoint,
+    cur_point as curPoint,
+    pre_close_point as preClosePoint,
+    trade_amount as tradeAmt,
+    trade_volume as tradeVol,
+    cur_point - pre_close_point as upDown,
+    (cur_point - pre_close_point) / pre_close_point as rose,
+    (max_point - min_point) / pre_close_point as amplitude,
+    cur_time as curTime
+    from stock_market_index_info
+    where cur_time = #{date}
+    and market_code in
+    <foreach collection="marketCodes" item="mcode" open="(" separator="," close=")">#{mcode}</foreach>
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from stock_market_index_info
-        where  id = #{id,jdbcType=BIGINT} 
+        where  id = #{id,jdbcType=BIGINT}
     </delete>
     <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.sakura.stock.pojo.entity.StockMarketIndexInfo" useGeneratedKeys="true">
         insert into stock_market_index_info
@@ -110,11 +128,11 @@
                     cur_time = #{curTime,jdbcType=TIMESTAMP},
                 </if>
         </set>
-        where   id = #{id,jdbcType=BIGINT} 
+        where   id = #{id,jdbcType=BIGINT}
     </update>
     <update id="updateByPrimaryKey" parameterType="com.sakura.stock.pojo.entity.StockMarketIndexInfo">
         update stock_market_index_info
-        set 
+        set
             market_code =  #{marketCode,jdbcType=CHAR},
             market_name =  #{marketName,jdbcType=VARCHAR},
             pre_close_point =  #{preClosePoint,jdbcType=DECIMAL},
@@ -125,6 +143,6 @@
             trade_amount =  #{tradeAmount,jdbcType=BIGINT},
             trade_volume =  #{tradeVolume,jdbcType=DECIMAL},
             cur_time =  #{curTime,jdbcType=TIMESTAMP}
-        where   id = #{id,jdbcType=BIGINT} 
+        where   id = #{id,jdbcType=BIGINT}
     </update>
 </mapper>
