@@ -1,6 +1,7 @@
 package com.sakura.stock.mapper;
 
 import com.sakura.stock.pojo.domain.InnerMarketDomain;
+import com.sakura.stock.pojo.domain.StockBlockDomain;
 import com.sakura.stock.pojo.entity.StockMarketIndexInfo;
 import org.apache.ibatis.annotations.Param;
 
@@ -34,4 +35,11 @@ public interface StockMarketIndexInfoMapper {
      * @return
      */
     List<InnerMarketDomain> getMarketInfo(@Param("date") Date date, @Param("marketCodes") List<String> marketCodes);
+
+    /**
+     * 获取沪深两市板块最新数据，以交易总金额降序查询，取前10条数据
+     * @param date
+     * @return
+     */
+    List<StockBlockDomain> getSectorInfo(Date date);
 }

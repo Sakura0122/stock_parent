@@ -1,6 +1,8 @@
 package com.sakura.stock.service;
 
 import com.sakura.stock.pojo.domain.InnerMarketDomain;
+import com.sakura.stock.pojo.domain.StockBlockDomain;
+import com.sakura.stock.vo.resp.R;
 
 import java.util.List;
 
@@ -15,4 +17,10 @@ public interface StockService {
      * @return
      */
     List<InnerMarketDomain> getInnerMarketInfo();
+
+    /**
+     * 获取沪深两市板块最新数据，以交易总金额降序查询，取前10条数据
+     * @return
+     */
+    List<StockBlockDomain> getSectorInfo();
 }
