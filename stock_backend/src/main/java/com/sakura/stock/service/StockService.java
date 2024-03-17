@@ -6,6 +6,7 @@ import com.sakura.stock.pojo.domain.StockUpdownDomain;
 import com.sakura.stock.vo.resp.PageResult;
 import com.sakura.stock.vo.resp.R;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -45,4 +46,12 @@ public interface StockService {
      * @return
      */
     Map<String, List> getStockUpDownCount();
+
+    /**
+     * 导出指定页码最新股票信息
+     * @param page
+     * @param pageSize
+     * @param response
+     */
+    void exportStockUpDownInfo(Integer page, Integer pageSize, HttpServletResponse response);
 }

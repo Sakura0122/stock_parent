@@ -1,5 +1,7 @@
 package com.sakura.stock.service.impl;
 
+import com.alibaba.excel.EasyExcel;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sakura.stock.mapper.StockMarketIndexInfoMapper;
@@ -11,11 +13,16 @@ import com.sakura.stock.pojo.vo.StockInfoConfig;
 import com.sakura.stock.service.StockService;
 import com.sakura.stock.utils.DateTimeUtil;
 import com.sakura.stock.vo.resp.PageResult;
+import com.sakura.stock.vo.resp.R;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +34,7 @@ import java.util.Map;
  * @description: 定义股票服务实现
  */
 @Service
+@Slf4j
 public class StockServiceImpl implements StockService {
 
     @Autowired
@@ -146,5 +154,41 @@ public class StockServiceImpl implements StockService {
 
         // 6.响应数据
         return data;
+    }
+
+    /**
+     * 导出指定页码最新股票信息
+     *
+     * @param page     当前页
+     * @param pageSize 页大小
+     * @param response 响应对象
+     */
+    @Override
+    public void exportStockUpDownInfo(Integer page, Integer pageSize, HttpServletResponse response) {
+        // 1.获取分页数据
+        PageResult<StockUpdownDomain> stockPageInfo = this.getStockPageInfo(page, pageSize);
+        List<StockUpdownDomain> rows = stockPageInfo.getRows();
+
+        // 2.将数据导出到excel中
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+        try {
+            String fileName = URLEncoder.encode("股票信息表", "UTF-8").replaceAll("\\+", "%20");
+            response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+            EasyExcel.write(response.getOutputStream(), StockUpdownDomain.class).sheet("股票导出信息").doWrite(rows);
+        } catch (IOException e) {
+            log.info("当前页码：{},每页大小：{},当前时间：{},异常信息：{}", page, pageSize, DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), e.getMessage());
+            // 通知前端异常 稍后重试
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            R<Object> error = R.error("导出失败，稍后重试");
+            try {
+                String jsonData = new ObjectMapper().writeValueAsString(error);
+                response.getWriter().write(jsonData);
+            } catch (IOException ex) {
+                log.error("exportStockUpDownInfo：响应错误信息失败,时间：{}", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+            }
+        }
     }
 }
