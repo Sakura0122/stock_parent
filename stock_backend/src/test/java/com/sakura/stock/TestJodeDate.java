@@ -1,7 +1,7 @@
 package com.sakura.stock;
 
+import cn.hutool.core.date.DateUtil;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.junit.jupiter.api.Test;
 
@@ -50,6 +50,15 @@ public class TestJodeDate {
         // String strDate = dateTime.toString(DateTimeFormat.forPattern("yyyyMMddHHmmss"));
         String strDate = dateTime.toString("yyyy.MM.dd HH:mm:ss");
         System.out.println(strDate);
+    }
+
+    @Test
+    public void test03() {
+        Date date;
+        date = DateTime.parse("2022-01-14 16:57:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
+        System.out.println(date);
+        Date date2 = DateUtil.parse("2022-01-14 16:57:00", "yyyy-MM-dd HH:mm:ss");
+        System.out.println(date2);
     }
 
 }

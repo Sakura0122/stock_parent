@@ -29,12 +29,57 @@
         select
         <include refid="Base_Column_List" />
         from stock_rt_info
-        where  id = #{id,jdbcType=BIGINT} 
+        where  id = #{id,jdbcType=BIGINT}
     </select>
 
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+  <select id="getStockInfoByTime" resultType="com.sakura.stock.pojo.domain.StockUpdownDomain">
+    select trade_amount                                    as tradeAmt,
+           pre_close_price                                 as preClosePrice,
+           (max_price - min_price) / pre_close_price       as amplitude,
+           stock_code                                      as code,
+           stock_name                                      as name,
+           cur_time                                        as curDate,
+           trade_volume                                    as tradeVol,
+           (cur_price - pre_close_price)                   as upDown,
+           (cur_price - pre_close_price) / pre_close_price as increase,
+           cur_price                                       as tradePrice
+    from stock_rt_info
+    where cur_time = #{curDate}
+    order by upDown desc
+  </select>
+
+  <select id="getStockIncrease" resultType="com.sakura.stock.pojo.domain.StockUpdownDomain">
+    select trade_amount                                    as tradeAmt,
+           pre_close_price                                 as preClosePrice,
+           (max_price - min_price) / pre_close_price       as amplitude,
+           stock_code                                      as code,
+           stock_name                                      as name,
+           cur_time                                        as curDate,
+           trade_volume                                    as tradeVol,
+           (cur_price - pre_close_price)                   as upDown,
+           (cur_price - pre_close_price) / pre_close_price as increase,
+           cur_price                                       as tradePrice
+    from stock_rt_info limit 4
+  </select>
+
+  <select id="getStockUpDownCount" resultType="java.util.Map">
+    select date_format(cur_time, '%Y%m%d%H%i') as time,
+    COUNT(*) as count
+    from stock_rt_info
+    where cur_time between #{startDate} and #{endDate}
+    and (cur_price - pre_close_price) / pre_close_price
+    <if test="flag=='up'">
+      >= 0.1
+    </if>
+    <if test="flag=='down'">
+      &lt;= -0.1
+    </if>
+    group by time;
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from stock_rt_info
-        where  id = #{id,jdbcType=BIGINT} 
+        where  id = #{id,jdbcType=BIGINT}
     </delete>
     <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.sakura.stock.pojo.entity.StockRtInfo" useGeneratedKeys="true">
         insert into stock_rt_info
@@ -110,11 +155,11 @@
                     cur_time = #{curTime,jdbcType=TIMESTAMP},
                 </if>
         </set>
-        where   id = #{id,jdbcType=BIGINT} 
+        where   id = #{id,jdbcType=BIGINT}
     </update>
     <update id="updateByPrimaryKey" parameterType="com.sakura.stock.pojo.entity.StockRtInfo">
         update stock_rt_info
-        set 
+        set
             stock_code =  #{stockCode,jdbcType=CHAR},
             stock_name =  #{stockName,jdbcType=VARCHAR},
             pre_close_price =  #{preClosePrice,jdbcType=DECIMAL},
@@ -125,6 +170,6 @@
             trade_amount =  #{tradeAmount,jdbcType=BIGINT},
             trade_volume =  #{tradeVolume,jdbcType=DECIMAL},
             cur_time =  #{curTime,jdbcType=TIMESTAMP}
-        where   id = #{id,jdbcType=BIGINT} 
+        where   id = #{id,jdbcType=BIGINT}
     </update>
 </mapper>

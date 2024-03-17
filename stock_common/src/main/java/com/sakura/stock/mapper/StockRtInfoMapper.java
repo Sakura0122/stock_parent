@@ -1,6 +1,12 @@
 package com.sakura.stock.mapper;
 
+import com.sakura.stock.pojo.domain.StockUpdownDomain;
 import com.sakura.stock.pojo.entity.StockRtInfo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
 * @author sakura
@@ -22,4 +28,26 @@ public interface StockRtInfoMapper {
 
     int updateByPrimaryKey(StockRtInfo record);
 
+    /**
+     * 查询指定时间点下股票数据集合
+     * @param curDate 日期时间
+     * @return
+     */
+    List<StockUpdownDomain> getStockInfoByTime(@Param("curDate") Date curDate);
+
+    /**
+     * 涨幅榜
+     * @return
+     */
+    List<StockUpdownDomain> getStockIncrease();
+
+
+    /**
+     * 统计最新股票交易日内每分钟涨跌停的股票数量
+     * @param startDate 开盘时间
+     * @param endDate 截止时间
+     * @param flag 涨跌停标识
+     * @return
+     */
+    List<Map> getStockUpDownCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("flag") String flag);
 }

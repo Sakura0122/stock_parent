@@ -2,9 +2,12 @@ package com.sakura.stock.service;
 
 import com.sakura.stock.pojo.domain.InnerMarketDomain;
 import com.sakura.stock.pojo.domain.StockBlockDomain;
+import com.sakura.stock.pojo.domain.StockUpdownDomain;
+import com.sakura.stock.vo.resp.PageResult;
 import com.sakura.stock.vo.resp.R;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: sakura
@@ -23,4 +26,23 @@ public interface StockService {
      * @return
      */
     List<StockBlockDomain> getSectorInfo();
+
+    /**
+     * 股票最新数据
+     *
+     * @return
+     */
+    PageResult<StockUpdownDomain> getStockPageInfo(Integer page, Integer pageSize);
+
+    /**
+     * 涨幅榜
+     * @return
+     */
+    List<StockUpdownDomain> getStockIncrease();
+
+    /**
+     * 统计最新股票交易日内每分钟涨跌停的股票数量
+     * @return
+     */
+    Map<String, List> getStockUpDownCount();
 }

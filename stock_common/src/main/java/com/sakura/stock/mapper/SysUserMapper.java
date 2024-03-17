@@ -2,6 +2,8 @@ package com.sakura.stock.mapper;
 
 import com.sakura.stock.pojo.entity.SysUser;
 
+import java.util.List;
+
 /**
  * @author sakura
  * @description 针对表【sys_user(用户表)】的数据库操作Mapper
@@ -21,6 +23,12 @@ public interface SysUserMapper {
     int updateByPrimaryKeySelective(SysUser record);
 
     int updateByPrimaryKey(SysUser record);
+
+    /**
+     * 查询所有用户
+     * @return
+     */
+    List<SysUser> selectAllUser();
 
     SysUser findUserInfoByUserName(String username);
 }
