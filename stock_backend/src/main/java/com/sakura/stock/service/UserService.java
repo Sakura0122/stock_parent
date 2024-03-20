@@ -1,10 +1,16 @@
 package com.sakura.stock.service;
 
+import com.sakura.stock.pojo.domain.UserInfoDomain;
 import com.sakura.stock.pojo.entity.SysUser;
 import com.sakura.stock.vo.req.LoginReqVo;
+import com.sakura.stock.vo.req.UserAddReqVo;
+import com.sakura.stock.vo.req.UserEditReqVO;
+import com.sakura.stock.vo.req.UserListReqVo;
 import com.sakura.stock.vo.resp.LoginRespVo;
+import com.sakura.stock.vo.resp.PageResult;
 import com.sakura.stock.vo.resp.R;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,4 +38,33 @@ public interface UserService {
      * @return
      */
     R<Map> getCaptchaCode();
+
+    /**
+     * 多条件综合查询用户分页信息，条件包含：分页信息 用户创建日期范围
+     * @param vo
+     * @return
+     */
+    PageResult<UserInfoDomain> getUserList(UserListReqVo vo);
+
+    /**
+     * 添加用户信息
+     *
+     * @param vo
+     * @return
+     */
+    R<String> addUser(UserAddReqVo vo);
+
+    /**
+     * 更新用户信息
+     * @param vo
+     * @return
+     */
+    R<String> updateUser(UserEditReqVO vo);
+
+    /**
+     * 批量删除用户
+     * @param userIds 用户id集合
+     * @return
+     */
+    R<String> deleteUsers(List<String> userIds);
 }

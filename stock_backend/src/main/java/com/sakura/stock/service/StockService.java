@@ -1,8 +1,6 @@
 package com.sakura.stock.service;
 
-import com.sakura.stock.pojo.domain.InnerMarketDomain;
-import com.sakura.stock.pojo.domain.StockBlockDomain;
-import com.sakura.stock.pojo.domain.StockUpdownDomain;
+import com.sakura.stock.pojo.domain.*;
 import com.sakura.stock.vo.resp.PageResult;
 import com.sakura.stock.vo.resp.R;
 
@@ -54,4 +52,30 @@ public interface StockService {
      * @param response
      */
     void exportStockUpDownInfo(Integer page, Integer pageSize, HttpServletResponse response);
+
+    /**
+     * 统计大盘T日和T-1日每分钟交易量
+     * @return
+     */
+    Map<String, List> getComparedStockTradeAmt();
+
+    /**
+     * 获取最新交易时间下股票（A股）在各个涨幅区间下的数量
+     * @return
+     */
+    Map getIncreaseRange();
+
+    /**
+     * 查询单个个股的分时行情数据
+     * @param code 股票编码
+     * @return
+     */
+    List<Stock4MinuteDomain> getStockScreenTimeSharing(String code);
+
+    /**
+     * 指定股票日K线数据
+     * @param code 股票编码
+     * @return
+     */
+    List<Stock4EvrDayDomain> getStockScreenDKLine(String code);
 }

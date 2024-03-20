@@ -2,14 +2,20 @@ package com.sakura.stock.service.impl;
 
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.LineCaptcha;
-import cn.hutool.captcha.generator.CodeGenerator;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.sakura.stock.constant.StockConstant;
 import com.sakura.stock.mapper.SysUserMapper;
+import com.sakura.stock.pojo.domain.UserInfoDomain;
 import com.sakura.stock.pojo.entity.SysUser;
 import com.sakura.stock.service.UserService;
 import com.sakura.stock.utils.IdWorker;
 import com.sakura.stock.vo.req.LoginReqVo;
+import com.sakura.stock.vo.req.UserAddReqVo;
+import com.sakura.stock.vo.req.UserEditReqVO;
+import com.sakura.stock.vo.req.UserListReqVo;
 import com.sakura.stock.vo.resp.LoginRespVo;
+import com.sakura.stock.vo.resp.PageResult;
 import com.sakura.stock.vo.resp.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,8 +25,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.awt.*;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -33,16 +42,16 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    @Autowired
+    @Resource
     private SysUserMapper sysUserMapper;
 
-    @Autowired
+    @Resource
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
+    @Resource
     private IdWorker idWorker;
 
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
 
     /**
@@ -148,5 +157,104 @@ public class UserServiceImpl implements UserService {
 
         // 5.响应数据
         return R.ok(data);
+    }
+
+    /**
+     * 多条件综合查询用户分页信息，条件包含：分页信息 用户创建日期范围
+     *
+     * @param vo
+     * @return
+     */
+    @Override
+    public PageResult<UserInfoDomain> getUserList(UserListReqVo vo) {
+        // 1.设置分页参数
+        PageHelper.startPage(vo.getPageNum(), vo.getPageSize());
+
+        // 2.调用mapper查询
+        List<UserInfoDomain> list = sysUserMapper.getUserList(vo.getUsername(), vo.getNickName(), vo.getStartTime(), vo.getEndTime());
+
+        // 3.组装pageResult对象
+        PageInfo<UserInfoDomain> pageInfo = new PageInfo<>(list);
+        PageResult<UserInfoDomain> data = new PageResult<>(pageInfo);
+
+        // 4.响应数据
+        return data;
+    }
+
+    /**
+     * 添加用户信息
+     *
+     * @param vo
+     * @return
+     */
+    @Override
+    public R<String> addUser(UserAddReqVo vo) {
+        // 1.判断用户是否存在
+        SysUser userInfoByUserName = sysUserMapper.findUserInfoByUserName(vo.getUsername());
+        if (userInfoByUserName != null) {
+            return R.error("用户名已存在");
+        }
+
+        // 2.封装用户信息
+        SysUser sysUser = new SysUser();
+        BeanUtils.copyProperties(vo, sysUser);
+        // 2.1 设置id
+        sysUser.setId(String.valueOf(idWorker.nextId()));
+        // 2.2 密码加密
+        sysUser.setPassword(passwordEncoder.encode(sysUser.getPassword()));
+        // 2.3 设置添加时间和更新时间
+        sysUser.setCreateTime(new Date());
+        sysUser.setUpdateTime(new Date());
+        // 2.4 是否删除
+        sysUser.setDeleted(1);
+        // TODO 获取当前操作用户的id
+
+        // 3.添加用户
+        int count = sysUserMapper.insert(sysUser);
+        if (count != 1) {
+            return R.error("添加用户失败");
+        }
+        return R.ok("添加用户成功");
+    }
+
+    /**
+     * 更新用户信息
+     *
+     * @param vo
+     * @return
+     */
+    @Override
+    public R<String> updateUser(UserEditReqVO vo) {
+        // 1.获取用户信息
+        SysUser sysUser = new SysUser();
+        BeanUtils.copyProperties(vo, sysUser);
+        // TODO 设置更新者ID
+
+        // 2.设置更新时间
+        sysUser.setUpdateTime(new Date());
+
+        // 3.更新用户信息
+        int count = sysUserMapper.updateByPrimaryKeySelective(sysUser);
+        if (count != 1) {
+            return R.error("更新用户失败");
+        }
+
+        // 4.响应数据
+        return R.ok("更新用户成功");
+    }
+
+    /**
+     * 批量删除用户
+     * @param userIds 用户id集合
+     * @return
+     */
+    @Override
+    public R<String> deleteUsers(List<String> userIds) {
+        // 1.调用mapper批量删除（设置deleted为0）
+        int count = sysUserMapper.deleteUsers(userIds);
+        if(count != 1){
+            return R.error("删除用户失败");
+        }
+        return R.ok("删除用户成功");
     }
 }

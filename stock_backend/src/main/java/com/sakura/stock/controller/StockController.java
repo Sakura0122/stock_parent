@@ -1,8 +1,6 @@
 package com.sakura.stock.controller;
 
-import com.sakura.stock.pojo.domain.InnerMarketDomain;
-import com.sakura.stock.pojo.domain.StockBlockDomain;
-import com.sakura.stock.pojo.domain.StockUpdownDomain;
+import com.sakura.stock.pojo.domain.*;
 import com.sakura.stock.service.StockService;
 import com.sakura.stock.vo.resp.PageResult;
 import com.sakura.stock.vo.resp.R;
@@ -10,6 +8,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +25,7 @@ import java.util.Map;
  * @date: 2024/3/14 21:38
  * @description: 定义股票相关接口
  */
-@Api(tags = {"定义股票相关接口"})
+@Api(tags = {"股票接口"})
 @RestController
 @RequestMapping("/api/quot")
 public class StockController {
@@ -97,7 +96,8 @@ public class StockController {
 
     /**
      * 导出指定页码的最新股票信息
-     * @param page 当前页
+     *
+     * @param page     当前页
      * @param pageSize 当前页大小
      * @param response 响应对象
      * @throws IOException
@@ -113,5 +113,56 @@ public class StockController {
             @RequestParam(name = "pageSize", required = false, defaultValue = "20") Integer pageSize,
             HttpServletResponse response) throws IOException {
         stockService.exportStockUpDownInfo(page, pageSize, response);
+    }
+
+    /**
+     * 统计大盘T日和T-1日每分钟交易量
+     *
+     * @return
+     */
+    @ApiOperation(value = "统计大盘T日和T-1日每分钟交易量", notes = "统计大盘T日和T-1日每分钟交易量", httpMethod = "GET")
+    @GetMapping("/stock/tradeAmt")
+    public R<Map<String, List>> getComparedStockTradeAmt() {
+        return R.ok(stockService.getComparedStockTradeAmt());
+    }
+
+    /**
+     * 获取最新交易时间下股票（A股）在各个涨幅区间下的数量
+     *
+     * @return
+     */
+    @ApiOperation(value = "获取最新交易时间下股票（A股）在各个涨幅区间下的数量", notes = "获取最新交易时间下股票（A股）在各个涨幅区间下的数量", httpMethod = "GET")
+    @GetMapping("/stock/updown")
+    public R<Map> getIncreaseRange() {
+        return R.ok(stockService.getIncreaseRange());
+    }
+
+    /**
+     * 查询单个个股的分时行情数据
+     *
+     * @param code 股票编码
+     * @return
+     */
+    @ApiOperation(value = "查询单个个股的分时行情数据", notes = "如果当前日期不在有效时间内，则以最近的一个股票交易时间作为查询时间点", httpMethod = "GET")
+    @GetMapping("/stock/screen/time-sharing")
+    public R<List<Stock4MinuteDomain>> getStockScreenTimeSharing(String code) {
+        if (StringUtils.isBlank(code)) {
+            return R.error("股票编码不能为空");
+        }
+        return R.ok(stockService.getStockScreenTimeSharing(code));
+    }
+
+    /**
+     * 指定股票日K线数据
+     * @param code 股票编码
+     * @return
+     */
+    @ApiOperation(value = "指定股票日K线数据", notes = "指定股票日K线数据", httpMethod = "GET")
+    @GetMapping("/stock/screen/dkline")
+    public R<List<Stock4EvrDayDomain>> getStockScreenDKLine(String code) {
+        if (StringUtils.isBlank(code)) {
+            return R.error("股票编码不能为空");
+        }
+        return R.ok(stockService.getStockScreenDKLine(code));
     }
 }

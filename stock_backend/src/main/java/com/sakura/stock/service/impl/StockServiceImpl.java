@@ -6,15 +6,14 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sakura.stock.mapper.StockMarketIndexInfoMapper;
 import com.sakura.stock.mapper.StockRtInfoMapper;
-import com.sakura.stock.pojo.domain.InnerMarketDomain;
-import com.sakura.stock.pojo.domain.StockBlockDomain;
-import com.sakura.stock.pojo.domain.StockUpdownDomain;
+import com.sakura.stock.pojo.domain.*;
 import com.sakura.stock.pojo.vo.StockInfoConfig;
 import com.sakura.stock.service.StockService;
 import com.sakura.stock.utils.DateTimeUtil;
 import com.sakura.stock.vo.resp.PageResult;
 import com.sakura.stock.vo.resp.R;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +22,8 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author: sakura
@@ -190,5 +187,140 @@ public class StockServiceImpl implements StockService {
                 log.error("exportStockUpDownInfo：响应错误信息失败,时间：{}", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
             }
         }
+    }
+
+    /**
+     * 统计大盘T日和T-1日每分钟交易量
+     *
+     * @return
+     */
+    @Override
+    public Map<String, List> getComparedStockTradeAmt() {
+        // 1.获取T日（最新股票交易时间点）
+        DateTime tEndcurDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        // 假数据
+        tEndcurDateTime = DateTime.parse("2021-12-28 16:00:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date tEndDate = tEndcurDateTime.toDate();
+        Date tStartDate = DateTimeUtil.getOpenDate(tEndcurDateTime).toDate();
+
+        // 2.获取T-1日（前一日交易时间点）
+        DateTime preTcurDateTime = DateTimeUtil.getPreviousTradingDay(tEndcurDateTime);
+        Date preTEndDate = preTcurDateTime.toDate();
+        Date preTStartDate = DateTimeUtil.getOpenDate(preTcurDateTime).toDate();
+
+        // 3.调用mapper查询数据
+        // 3.1 统计T日
+        List<Map> tData = stockRtInfoMapper.getSumAmtInfo(tStartDate, tEndDate, stockInfoConfig.getInner());
+        // 3.2 统计T-1日
+        List<Map> preTData = stockRtInfoMapper.getSumAmtInfo(preTStartDate, preTEndDate, stockInfoConfig.getInner());
+
+        // 4.组装数据
+        Map<String, List> data = new HashMap<>();
+        data.put("amtList", tData);
+        data.put("yesAmtList", preTData);
+
+        // 5.响应数据
+        return data;
+    }
+
+    /**
+     * 获取最新交易时间下股票（A股）在各个涨幅区间下的数量
+     *
+     * @return
+     */
+    @Override
+    public Map getIncreaseRange() {
+        // 1.获取当前最新交易时间点
+        DateTime curDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        curDateTime = DateTime.parse("2022-01-06 09:55:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date date = curDateTime.toDate();
+
+        // 2.调用mapper查询数据
+        List<Map> infos = stockRtInfoMapper.getIncreaseRangeInfoByDate(date);
+
+        // 获取有序的涨幅区间标题集合
+        List<String> upDownRange = stockInfoConfig.getUpDownRange();
+        // 将顺序的涨幅区间内的每个元素转换成Map对象即可
+        // List<Map> allInfos  = new ArrayList<>();
+        // for (String title : upDownRange) {
+        //     Map tmp = null;
+        //     for (Map info : infos) {
+        //         if (info.containsValue(title)) {
+        //             tmp = info;
+        //             break;
+        //         }
+        //     }
+        //     if (tmp == null) {
+        //         tmp = new HashMap();
+        //         tmp.put("count", 0);
+        //         tmp.put("title", title);
+        //     }
+        //     allInfos.add(tmp);
+        // }
+
+        // stream遍历获取
+        List<Map> allInfos = upDownRange.stream().map(title -> {
+            Optional<Map> result = infos.stream().filter(info -> info.containsValue(title)).findFirst();
+            if (result.isPresent()) {
+                return result.get();
+            } else {
+                Map<String, Object> tmp = new HashMap();
+                tmp.put("count", 0);
+                tmp.put("title", title);
+                return tmp;
+            }
+        }).collect(Collectors.toList());
+
+        // 3.组装数据
+        Map<String, Object> data = new HashMap<>();
+        data.put("time", curDateTime.toString("yyyy-MM-dd HH:mm:ss"));
+        // data.put("infos", infos);
+        data.put("infos", allInfos);
+
+        // 4.响应数据
+        return data;
+    }
+
+    /**
+     * 查询单个个股的分时行情数据
+     *
+     * @param code 股票编码
+     * @return
+     */
+    @Override
+    public List<Stock4MinuteDomain> getStockScreenTimeSharing(String code) {
+        // 1.获取当前最新交易时间点 开始时间与结束时间
+        DateTime endDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        endDateTime = DateTime.parse("2021-12-30 14:30:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date endDate = endDateTime.toDate();
+        Date startDate = DateTimeUtil.getOpenDate(endDateTime).toDate();
+
+        // 2.调用mapper查询数据
+        List<Stock4MinuteDomain> data = stockRtInfoMapper.getStock4MinuteInfo(startDate, endDate, code);
+
+        // 3.响应数据
+        return data;
+    }
+
+    /**
+     * 指定股票日K线数据
+     * @param code 股票编码
+     * @return
+     */
+    @Override
+    public List<Stock4EvrDayDomain> getStockScreenDKLine(String code) {
+        // 1.获取统计日k线数据的时间范围
+        // 1.1 获取截止时间
+        DateTime endDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        endDateTime = DateTime.parse("2022-01-06 14:25:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date endDate = endDateTime.toDate();
+        // 1.2 获取起始时间
+        Date startDate = endDateTime.minusMonths(3).toDate();
+
+        // 2.调用mapper查询数据
+        List<Stock4EvrDayDomain> data = stockRtInfoMapper.getStock4DkLine(startDate, endDate, code);
+
+        // 3.响应数据
+        return data;
     }
 }

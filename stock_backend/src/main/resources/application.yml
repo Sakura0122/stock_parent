@@ -6,8 +6,10 @@ spring:
   datasource:
     druid:
       username: root
-      password: 1234
-      url: jdbc:mysql://192.168.36.128:3306/stock_db?useSSL=false
+#      password: 1234
+      password: 123456
+#      url: jdbc:mysql://192.168.36.128:3306/stock_db?useSSL=false
+      url: jdbc:mysql://127.0.0.1:3306/stock_db?useSSL=false
       driver-class-name: com.mysql.jdbc.Driver
       # 初始化时建立物理连接的个数。初始化发生在显示调用 init 方法，或者第一次 getConnection 时
       initialSize: 6
