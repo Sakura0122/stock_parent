@@ -40,12 +40,12 @@ public class UserController {
      * @param name
      * @return
      */
-    @ApiOperation(value = "根据用户名称查询用户信息")
-    @ApiImplicitParam(name = "username", value = "用户名称", required = true, type = "path")
-    @GetMapping("/user/{username}")
-    public SysUser getUserByUserName(@PathVariable("username") String name) {
-        return userService.findByUsername(name);
-    }
+    // @ApiOperation(value = "根据用户名称查询用户信息")
+    // @ApiImplicitParam(name = "username", value = "用户名称", required = true, type = "path")
+    // @GetMapping("/user/{username}")
+    // public SysUser getUserByUserName(@PathVariable("username") String name) {
+    //     return userService.findByUsername(name);
+    // }
 
     /**
      * 用户登录
@@ -118,6 +118,19 @@ public class UserController {
             return R.error("参数不能为空");
         }
         return userService.updateUser(vo);
+    }
+
+    /**
+     * 获取用户信息
+     * @param id 用户id
+     * @return
+     */
+    @GetMapping("/user/{id}")
+    public R<UserInfoDomain> getUserById(@PathVariable("id") String id) {
+        if (id == null) {
+            return R.error("参数不能为空");
+        }
+        return userService.getUserById(id);
     }
 
     /**

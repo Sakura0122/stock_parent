@@ -2,6 +2,7 @@ package com.sakura.stock.service.impl;
 
 import com.alibaba.excel.EasyExcel;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sakura.stock.mapper.StockMarketIndexInfoMapper;
@@ -19,6 +20,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -34,14 +36,17 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StockServiceImpl implements StockService {
 
-    @Autowired
+    @Resource
     private StockInfoConfig stockInfoConfig;
 
-    @Autowired
+    @Resource
     private StockMarketIndexInfoMapper stockMarketIndexInfoMapper;
 
-    @Autowired
+    @Resource
     private StockRtInfoMapper stockRtInfoMapper;
+
+    @Resource
+    private Cache<String, Object> caffeineCache;
 
     /**
      * 获取国内大盘最新数据
@@ -50,18 +55,23 @@ public class StockServiceImpl implements StockService {
      */
     @Override
     public List<InnerMarketDomain> getInnerMarketInfo() {
-        // 1.获取股票最新交易时间点（准确到分钟 秒和毫秒置为0）
-        Date curDate = DateTimeUtil.getLastDate4Stock(DateTime.now()).toDate();
-        curDate = DateTime.parse("2022-07-07 14:52:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
+        // 默认从本地缓存加载数据 不存在则从数据库加载同步到缓存
+        // 在开盘周期内 本地缓存默认有效期一分钟
+        Object cache = caffeineCache.get("innerMarketKey", key -> {
+            // 1.获取股票最新交易时间点（准确到分钟 秒和毫秒置为0）
+            Date curDate = DateTimeUtil.getLastDate4Stock(DateTime.now()).toDate();
+            curDate = DateTime.parse("2022-07-07 14:52:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
 
-        // 2.获取大盘编码集合
-        List<String> mCodes = stockInfoConfig.getInner();
+            // 2.获取大盘编码集合
+            List<String> mCodes = stockInfoConfig.getInner();
 
-        // 3.调用mapper查询数据
-        List<InnerMarketDomain> data = stockMarketIndexInfoMapper.getMarketInfo(curDate, mCodes);
+            // 3.调用mapper查询数据
+            List<InnerMarketDomain> data = stockMarketIndexInfoMapper.getMarketInfo(curDate, mCodes);
 
-        // 4.响应数据
-        return data;
+            // 4.响应数据
+            return data;
+        });
+        return (List<InnerMarketDomain>) cache;
     }
 
     /**
@@ -304,6 +314,7 @@ public class StockServiceImpl implements StockService {
 
     /**
      * 指定股票日K线数据
+     *
      * @param code 股票编码
      * @return
      */

@@ -67,4 +67,11 @@ public interface UserService {
      * @return
      */
     R<String> deleteUsers(List<String> userIds);
+
+    /**
+     * 获取用户信息
+     * @param id 用户id
+     * @return
+     */
+    R<UserInfoDomain> getUserById(String id);
 }

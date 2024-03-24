@@ -5,6 +5,7 @@ import com.sakura.stock.pojo.domain.StockBlockDomain;
 import com.sakura.stock.pojo.entity.StockMarketIndexInfo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -42,4 +43,11 @@ public interface StockMarketIndexInfoMapper {
      * @return
      */
     List<StockBlockDomain> getSectorInfo(Date date);
+
+    /**
+     * 批量插入大盘数据
+     * @param list 大盘集合
+     * @return
+     */
+    int insertBatch(@Param("list") ArrayList<StockMarketIndexInfo> list);
 }

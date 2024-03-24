@@ -22,12 +22,16 @@
         select
         <include refid="Base_Column_List" />
         from stock_business
-        where  stock_code = #{stockCode,jdbcType=CHAR} 
+        where  stock_code = #{stockCode,jdbcType=CHAR}
     </select>
 
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+  <select id="getAllStockCodes" resultType="java.lang.String">
+    select stock_code from stock_business
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from stock_business
-        where  stock_code = #{stockCode,jdbcType=CHAR} 
+        where  stock_code = #{stockCode,jdbcType=CHAR}
     </delete>
     <insert id="insert" keyColumn="stock_code" keyProperty="stockCode" parameterType="com.sakura.stock.pojo.entity.StockBusiness" useGeneratedKeys="true">
         insert into stock_business
@@ -76,16 +80,16 @@
                     update_time = #{updateTime,jdbcType=TIMESTAMP},
                 </if>
         </set>
-        where   stock_code = #{stockCode,jdbcType=CHAR} 
+        where   stock_code = #{stockCode,jdbcType=CHAR}
     </update>
     <update id="updateByPrimaryKey" parameterType="com.sakura.stock.pojo.entity.StockBusiness">
         update stock_business
-        set 
+        set
             stock_name =  #{stockName,jdbcType=VARCHAR},
             block_label =  #{blockLabel,jdbcType=VARCHAR},
             block_name =  #{blockName,jdbcType=VARCHAR},
             business =  #{business,jdbcType=VARCHAR},
             update_time =  #{updateTime,jdbcType=TIMESTAMP}
-        where   stock_code = #{stockCode,jdbcType=CHAR} 
+        where   stock_code = #{stockCode,jdbcType=CHAR}
     </update>
 </mapper>

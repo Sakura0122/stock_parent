@@ -109,7 +109,23 @@
                 <if test="curTime != null">#{curTime,jdbcType=TIMESTAMP},</if>
         </trim>
     </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="com.sakura.stock.pojo.entity.StockMarketIndexInfo">
+
+  <insert id="insertBatch">
+    insert into stock_market_index_info
+    ( id,market_code,market_name
+    ,pre_close_point,open_point,cur_point
+    ,min_point,max_point,trade_amount
+    ,trade_volume,cur_time)
+    values
+    <foreach collection="list" item="item" separator=",">
+      (#{item.id,jdbcType=BIGINT},#{item.marketCode,jdbcType=CHAR},#{item.marketName,jdbcType=VARCHAR}
+      ,#{item.preClosePoint,jdbcType=DECIMAL},#{item.openPoint,jdbcType=DECIMAL},#{item.curPoint,jdbcType=DECIMAL}
+      ,#{item.minPoint,jdbcType=DECIMAL},#{item.maxPoint,jdbcType=DECIMAL},#{item.tradeAmount,jdbcType=BIGINT}
+      ,#{item.tradeVolume,jdbcType=DECIMAL},#{item.curTime,jdbcType=TIMESTAMP})
+    </foreach>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.sakura.stock.pojo.entity.StockMarketIndexInfo">
         update stock_market_index_info
         <set>
                 <if test="marketCode != null">

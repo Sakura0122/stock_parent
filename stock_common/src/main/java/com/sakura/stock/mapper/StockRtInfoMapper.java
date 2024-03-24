@@ -92,4 +92,11 @@ public interface StockRtInfoMapper {
      * @return
      */
     List<Stock4EvrDayDomain> getStock4DkLine(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("code")String code);
+
+    /**
+     * 批量插入个股数据
+     * @param list
+     * @return
+     */
+    int insertBatch(@Param("list") List<StockRtInfo> list);
 }

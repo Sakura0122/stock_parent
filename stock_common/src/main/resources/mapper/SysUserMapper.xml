@@ -23,7 +23,7 @@
   </resultMap>
 
   <sql id="Base_Column_List">
-    id,username,password,
+    id,username,
         phone,real_name,nick_name,
         email,status,sex,
         deleted,create_id,update_id,
@@ -142,9 +142,9 @@
       <if test="username != null">
         username = #{username,jdbcType=VARCHAR},
       </if>
-      <if test="password != null">
-        password = #{password,jdbcType=VARCHAR},
-      </if>
+      <!--<if test="password != null">-->
+      <!--  password = #{password,jdbcType=VARCHAR},-->
+      <!--</if>-->
       <if test="phone != null">
         phone = #{phone,jdbcType=VARCHAR},
       </if>

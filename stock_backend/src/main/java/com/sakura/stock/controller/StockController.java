@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.Map;
 @RequestMapping("/api/quot")
 public class StockController {
 
-    @Autowired
+    @Resource
     private StockService stockService;
 
     /**

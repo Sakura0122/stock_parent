@@ -213,6 +213,22 @@
       <if test="curTime != null">#{curTime,jdbcType=TIMESTAMP},</if>
     </trim>
   </insert>
+
+  <insert id="insertBatch">
+    insert into stock_rt_info
+    ( id, stock_code, stock_name
+    , pre_close_price, open_price, cur_price
+    , min_price, max_price, trade_amount
+    , trade_volume, cur_time)
+    values
+        <foreach collection="list" item="item" separator=",">
+          ( #{item.id,jdbcType=BIGINT}, #{item.stockCode,jdbcType=CHAR}, #{item.stockName,jdbcType=VARCHAR}
+          , #{item.preClosePrice,jdbcType=DECIMAL}, #{item.openPrice,jdbcType=DECIMAL}, #{item.curPrice,jdbcType=DECIMAL}
+          , #{item.minPrice,jdbcType=DECIMAL}, #{item.maxPrice,jdbcType=DECIMAL}, #{item.tradeAmount,jdbcType=BIGINT}
+          , #{item.tradeVolume,jdbcType=DECIMAL}, #{item.curTime,jdbcType=TIMESTAMP})
+        </foreach>
+  </insert>
+
   <update id="updateByPrimaryKeySelective" parameterType="com.sakura.stock.pojo.entity.StockRtInfo">
     update stock_rt_info
     <set>

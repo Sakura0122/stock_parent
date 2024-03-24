@@ -1,6 +1,10 @@
 package com.sakura.stock.mapper;
 
 import com.sakura.stock.pojo.entity.SysRolePermission;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Set;
 
 /**
 * @author sakura
@@ -22,4 +26,17 @@ public interface SysRolePermissionMapper {
 
     int updateByPrimaryKey(SysRolePermission record);
 
+    /**
+     * 批量新增角色权限
+     * @param sysRolePermissions
+     * @return
+     */
+    int addRolePermissionBatch(@Param("sysRolePermissions") List<SysRolePermission> sysRolePermissions);
+
+    /**
+     * 获取角色权限
+     * @param roleId 角色id
+     * @return
+     */
+    Set<String> getPermissionIdsByRoleId(@Param("roleId") String roleId);
 }

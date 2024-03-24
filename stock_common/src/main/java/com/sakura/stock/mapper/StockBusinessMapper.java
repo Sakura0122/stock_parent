@@ -2,6 +2,8 @@ package com.sakura.stock.mapper;
 
 import com.sakura.stock.pojo.entity.StockBusiness;
 
+import java.util.List;
+
 /**
 * @author sakura
 * @description 针对表【stock_business(主营业务表)】的数据库操作Mapper
@@ -21,5 +23,11 @@ public interface StockBusinessMapper {
     int updateByPrimaryKeySelective(StockBusiness record);
 
     int updateByPrimaryKey(StockBusiness record);
+
+    /**
+     * 获取所有A股编码集合
+     * @return
+     */
+    List<String> getAllStockCodes();
 
 }

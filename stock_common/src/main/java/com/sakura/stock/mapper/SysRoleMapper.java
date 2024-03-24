@@ -1,6 +1,9 @@
 package com.sakura.stock.mapper;
 
 import com.sakura.stock.pojo.entity.SysRole;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
 * @author sakura
@@ -22,4 +25,16 @@ public interface SysRoleMapper {
 
     int updateByPrimaryKey(SysRole record);
 
+    /**
+     * 获取所有角色
+     * @return
+     */
+    List<SysRole> getAllRoles();
+
+    /**
+     * 删除角色
+     * @param id 角色id
+     * @return
+     */
+    int deleteRoleById(@Param("id") Long id);
 }

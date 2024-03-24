@@ -21,7 +21,7 @@ public interface SysUserMapper {
 
     int insertSelective(SysUser record);
 
-    SysUser selectByPrimaryKey(String id);
+    SysUser selectByPrimaryKey(long id);
 
     /**
      * 更新用户信息

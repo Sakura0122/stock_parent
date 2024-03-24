@@ -199,7 +199,7 @@ public class UserServiceImpl implements UserService {
         SysUser sysUser = new SysUser();
         BeanUtils.copyProperties(vo, sysUser);
         // 2.1 设置id
-        sysUser.setId(String.valueOf(idWorker.nextId()));
+        sysUser.setId((idWorker.nextId()));
         // 2.2 密码加密
         sysUser.setPassword(passwordEncoder.encode(sysUser.getPassword()));
         // 2.3 设置添加时间和更新时间
@@ -230,8 +230,10 @@ public class UserServiceImpl implements UserService {
         BeanUtils.copyProperties(vo, sysUser);
         // TODO 设置更新者ID
 
-        // 2.设置更新时间
+        // 2.1 设置更新时间
         sysUser.setUpdateTime(new Date());
+        // 2.2 设置id
+        sysUser.setId(Long.parseLong(vo.getId()));
 
         // 3.更新用户信息
         int count = sysUserMapper.updateByPrimaryKeySelective(sysUser);
@@ -245,6 +247,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 批量删除用户
+     *
      * @param userIds 用户id集合
      * @return
      */
@@ -252,9 +255,32 @@ public class UserServiceImpl implements UserService {
     public R<String> deleteUsers(List<String> userIds) {
         // 1.调用mapper批量删除（设置deleted为0）
         int count = sysUserMapper.deleteUsers(userIds);
-        if(count != 1){
+        if (count != 0) {
             return R.error("删除用户失败");
         }
         return R.ok("删除用户成功");
+    }
+
+    /**
+     * 获取用户信息
+     *
+     * @param id 用户id
+     * @return
+     */
+    @Override
+    public R<UserInfoDomain> getUserById(String id) {
+        // 1.调用mapper查询
+        SysUser sysUser = sysUserMapper.selectByPrimaryKey(Long.parseLong(id));
+        if (sysUser == null) {
+            return R.error("用户不存在");
+        }
+
+        // 2.组装对象
+        UserInfoDomain userInfoDomain = new UserInfoDomain();
+        BeanUtils.copyProperties(sysUser, userInfoDomain);
+        userInfoDomain.setId(String.valueOf(sysUser.getId()));
+
+        // 3.响应数据
+        return R.ok(userInfoDomain);
     }
 }

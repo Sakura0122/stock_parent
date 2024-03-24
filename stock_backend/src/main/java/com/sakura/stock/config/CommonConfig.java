@@ -1,5 +1,7 @@
 package com.sakura.stock.config;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sakura.stock.pojo.vo.StockInfoConfig;
 import com.sakura.stock.utils.IdWorker;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

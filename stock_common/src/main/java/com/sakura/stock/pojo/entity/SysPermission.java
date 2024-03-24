@@ -2,17 +2,31 @@ package com.sakura.stock.pojo.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * 权限表（菜单）
+ *
  * @TableName sys_permission
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Accessors(chain = true)
 public class SysPermission implements Serializable {
     /**
      * 主键
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     /**
@@ -53,6 +67,7 @@ public class SysPermission implements Serializable {
     /**
      * 父级菜单权限id，pid等于0 为顶层权限
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long pid;
 
     /**

@@ -18,7 +18,7 @@ public class SysUser implements Serializable {
      * 用户id
      */
     @ApiModelProperty(value="用户id")
-    private String id;
+    private long id;
 
     /**
      * 账户

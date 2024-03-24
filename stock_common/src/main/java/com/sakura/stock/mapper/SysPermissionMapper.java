@@ -1,6 +1,9 @@
 package com.sakura.stock.mapper;
 
 import com.sakura.stock.pojo.entity.SysPermission;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
 * @author sakura
@@ -22,4 +25,16 @@ public interface SysPermissionMapper {
 
     int updateByPrimaryKey(SysPermission record);
 
+    /**
+     * 获取所有权限
+     * @return
+     */
+    List<SysPermission> getAllPermission();
+
+    /**
+     * 查询当前菜单下是否有子菜单
+     * @param permissionId 权限id
+     * @return
+     */
+    int findChildrenByParentId(@Param("permissionId") String permissionId);
 }
