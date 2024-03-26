@@ -5,9 +5,13 @@ import cn.hutool.captcha.LineCaptcha;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sakura.stock.constant.StockConstant;
+import com.sakura.stock.mapper.SysRoleMapper;
 import com.sakura.stock.mapper.SysUserMapper;
+import com.sakura.stock.mapper.SysUserRoleMapper;
 import com.sakura.stock.pojo.domain.UserInfoDomain;
+import com.sakura.stock.pojo.entity.SysRole;
 import com.sakura.stock.pojo.entity.SysUser;
+import com.sakura.stock.pojo.entity.SysUserRole;
 import com.sakura.stock.service.UserService;
 import com.sakura.stock.utils.IdWorker;
 import com.sakura.stock.vo.req.LoginReqVo;
@@ -24,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.awt.*;
@@ -32,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author: sakura
@@ -53,6 +59,12 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private RedisTemplate redisTemplate;
+
+    @Resource
+    private SysUserRoleMapper sysUserRoleMapper;
+
+    @Resource
+    private SysRoleMapper sysRoleMapper;
 
     /**
      * 根据用户名查询用户信息
@@ -282,5 +294,59 @@ public class UserServiceImpl implements UserService {
 
         // 3.响应数据
         return R.ok(userInfoDomain);
+    }
+
+    /**
+     * 获取所有角色信息和当前用户的角色信息
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public R<Map<String, List>> getUserRoleInfo(String userId) {
+        // 1.获取当前用户拥有的角色id
+        List<String> roleIds = sysUserRoleMapper.getUserRoleId(userId);
+
+        // 2.获取所有角色
+        List<SysRole> allRoles = sysRoleMapper.getAllRoles();
+
+        Map<String, List> data = new HashMap<>();
+        data.put("ownRoleIds", roleIds);
+        data.put("allRole", allRoles);
+
+        return R.ok(data);
+    }
+
+    /**
+     * 编辑用户角色信息
+     *
+     * @param userId  用户id
+     * @param roleIds 角色id列表
+     * @return
+     */
+    @Override
+    public R<String> editUserRoleInfo(String userId, List<String> roleIds) {
+        // 1.删除用户原来的角色id
+        sysUserRoleMapper.deleteByUserId(userId);
+
+        // 2.判断角色是否为空
+        if (CollectionUtils.isEmpty(roleIds)) {
+            return R.ok("设置角色成功");
+        }
+
+        // 3.封装角色对象
+        List<SysUserRole> list = roleIds.stream().map(item -> {
+            return SysUserRole.builder().id(idWorker.nextId())
+                    .userId(Long.valueOf(userId)).roleId(Long.valueOf(item))
+                    .createTime(new Date()).build();
+        }).collect(Collectors.toList());
+
+        // 4.调用mapper批量插入
+        int count = sysUserRoleMapper.insertBatch(list);
+        if (count == 0) {
+            return R.error("设置失败");
+        }
+
+        return R.ok("设置成功");
     }
 }

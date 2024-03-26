@@ -43,7 +43,7 @@ public class TestRestTemplate {
      */
     @Test
     public void testInnerGetMarketInfo() {
-        stockTimerTaskService.getInnerMarketInfo();
-        // stockTimerTaskService.getStockRtIndex();
+        // stockTimerTaskService.getInnerMarketInfo();
+        stockTimerTaskService.getStockRtIndex();
     }
 }

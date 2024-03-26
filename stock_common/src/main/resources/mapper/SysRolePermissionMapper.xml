@@ -34,6 +34,11 @@
     from sys_role_permission
     where id = #{id,jdbcType=BIGINT}
   </delete>
+
+  <delete id="deleteByRoleId">
+    delete from sys_role_permission where role_id = #{roleId}
+  </delete>
+
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.sakura.stock.pojo.entity.SysRolePermission"
           useGeneratedKeys="true">
     insert into sys_role_permission

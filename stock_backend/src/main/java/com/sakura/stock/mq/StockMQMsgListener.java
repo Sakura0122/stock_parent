@@ -25,7 +25,7 @@ public class StockMQMsgListener {
     @Resource
     private StockService stockService;
 
-    @RabbitListener(queues = "innerMarketQueue")
+    // @RabbitListener(queues = "innerMarketQueue")
     public void refreshInnerMarketInfo(Date startTime) {
         // 统计当前时间点与发送消息时时间点差值 如果超过一分钟 则告警
         // 获取时间毫秒差值

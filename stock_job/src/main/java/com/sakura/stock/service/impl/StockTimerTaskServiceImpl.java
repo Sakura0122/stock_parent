@@ -15,10 +15,12 @@ import com.sakura.stock.utils.ParserStockInfoUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -64,6 +66,12 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
 
     @Resource
     private RabbitTemplate rabbitTemplate;
+
+    /**
+     * 注入线程池对象
+     */
+    @Resource
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     /**
      * 必须保障该对象无状态
@@ -174,30 +182,86 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
                 .map(item -> item.startsWith("6") ? "sh" + item : "sz" + item)
                 .collect(Collectors.toList());
         // 将所有个股编码组成大的集合分成若干小集合 分批次拉取数据
+        long startTime = System.currentTimeMillis();
         ListUtil.split(allStockCodes, 15).forEach(item -> {
-            String url = stockInfoConfig.getMarketUrl() + String.join(",", item);
-            // 发起请求
-            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
-            int statusCodeValue = responseEntity.getStatusCodeValue();
-            if (statusCodeValue != 200) {
-                log.error("当前时间点：{}，采集数据失败，状态码为：{}", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), statusCodeValue);
-                // 发送企业微信 钉钉 给运维人员提醒
-                return;
-            }
-            // 获取js格式数据
-            String jsData = responseEntity.getBody();
-            // 调用工具类解析数据
-            List<StockRtInfo> list = parserStockInfoUtil.parser4StockOrMarketInfo(jsData, ParseType.ASHARE);
-            log.info("采集个股数据：{}", list);
+            // String url = stockInfoConfig.getMarketUrl() + String.join(",", item);
+            // // 发起请求
+            // ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
+            // int statusCodeValue = responseEntity.getStatusCodeValue();
+            // if (statusCodeValue != 200) {
+            //     log.error("当前时间点：{}，采集数据失败，状态码为：{}", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), statusCodeValue);
+            //     // 发送企业微信 钉钉 给运维人员提醒
+            //     return;
+            // }
+            // // 获取js格式数据
+            // String jsData = responseEntity.getBody();
+            // // 调用工具类解析数据
+            // List<StockRtInfo> list = parserStockInfoUtil.parser4StockOrMarketInfo(jsData, ParseType.ASHARE);
+            // log.info("采集个股数据：{}", list);
+            //
+            // // 批量插入
+            // int count = stockRtInfoMapper.insertBatch(list);
+            // if (count == 0) {
+            //     log.error("当前时间：{},插入数据：{},失败", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), list);
+            // } else {
+            //     log.info("当前时间：{},插入数据：{},成功", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), list);
+            // }
 
-            // 批量插入
-            int count = stockRtInfoMapper.insertBatch(list);
-            if (count == 0) {
-                log.error("当前时间：{},插入数据：{},失败", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), list);
-            } else {
-                log.info("当前时间：{},插入数据：{},成功", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), list);
-            }
+            // 方案1：原始数据采集个股数据时将集合分片 然后分批次串行采集数据 效率不高 存在较高采集延迟 引入多线程
+            // 方案1的问题：1.每次来任务 就创建换一个线程 复用性差 2.如果多线程使用不当 造成cpu竞争激烈 导致频繁上下文切换 性能降低
+            // new Thread(() -> {
+            //     String url = stockInfoConfig.getMarketUrl() + String.join(",", item);
+            //     // 发起请求
+            //     ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
+            //     int statusCodeValue = responseEntity.getStatusCodeValue();
+            //     if (statusCodeValue != 200) {
+            //         log.error("当前时间点：{}，采集数据失败，状态码为：{}", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), statusCodeValue);
+            //         // 发送企业微信 钉钉 给运维人员提醒
+            //         return;
+            //     }
+            //     // 获取js格式数据
+            //     String jsData = responseEntity.getBody();
+            //     // 调用工具类解析数据
+            //     List<StockRtInfo> list = parserStockInfoUtil.parser4StockOrMarketInfo(jsData, ParseType.ASHARE);
+            //     log.info("采集个股数据：{}", list);
+            //
+            //     // 批量插入
+            //     int count = stockRtInfoMapper.insertBatch(list);
+            //     if (count == 0) {
+            //         log.error("当前时间：{},插入数据：{},失败", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), list);
+            //     } else {
+            //         log.info("当前时间：{},插入数据：{},成功", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), list);
+            //     }
+            // }).start();
+
+            // 方案2：引入线程池
+            threadPoolTaskExecutor.execute(() ->{
+                String url = stockInfoConfig.getMarketUrl() + String.join(",", item);
+                // 发起请求
+                ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
+                int statusCodeValue = responseEntity.getStatusCodeValue();
+                if (statusCodeValue != 200) {
+                    log.error("当前时间点：{}，采集数据失败，状态码为：{}", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), statusCodeValue);
+                    // 发送企业微信 钉钉 给运维人员提醒
+                    return;
+                }
+                // 获取js格式数据
+                String jsData = responseEntity.getBody();
+                // 调用工具类解析数据
+                List<StockRtInfo> list = parserStockInfoUtil.parser4StockOrMarketInfo(jsData, ParseType.ASHARE);
+                log.info("采集个股数据：{}", list);
+
+                // 批量插入
+                int count = stockRtInfoMapper.insertBatch(list);
+                if (count == 0) {
+                    log.error("当前时间：{},插入数据：{},失败", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), list);
+                } else {
+                    log.info("当前时间：{},插入数据：{},成功", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), list);
+                }
+            } );
         });
+        long time = System.currentTimeMillis() - startTime;
+        log.info("采集花费时间：{}ms",time);
     }
 
     /**

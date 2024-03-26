@@ -87,8 +87,44 @@ public class RoleServiceImpl implements RoleService {
         List<Long> permissionsIds = vo.getPermissionsIds();
         if (!CollectionUtils.isEmpty(permissionsIds)) {
             List<SysRolePermission> sysRolePermissions = permissionsIds.stream().map(permissionId -> {
-                SysRolePermission sysRolePermission = SysRolePermission.builder().id(idWorker.nextId())
+                return SysRolePermission.builder().id(idWorker.nextId())
                         .roleId(roleId).permissionId(permissionId).createTime(new Date()).build();
+            }).collect(Collectors.toList());
+            int count = sysRolePermissionMapper.addRolePermissionBatch(sysRolePermissions);
+            if (count == 0) {
+                return R.ok("给角色设置权限失败");
+            }
+        }
+        return R.ok("新增成功");
+    }
+
+    /**
+     * 编辑角色
+     *
+     * @param vo
+     * @return
+     */
+    @Override
+    public R<String> editRoleWithPermissions(RoleAddVo vo) {
+        // 1.组装数据
+        SysRole sysRole = SysRole.builder().id(vo.getId()).name(vo.getName()).description(vo.getDescription())
+                .status(1).deleted(1).updateTime(new Date()).build();
+
+        // 2.调用mapper更新数据
+        int updateCount = sysRoleMapper.updateByPrimaryKeySelective(sysRole);
+        if (updateCount != 1) {
+            return R.error("更新失败");
+        }
+
+        // 3.删除当前角色关联的权限信息
+        sysRolePermissionMapper.deleteByRoleId(String.valueOf(vo.getId()));
+
+        // 4.批量添加角色权限
+        List<Long> permissionsIds = vo.getPermissionsIds();
+        if (!CollectionUtils.isEmpty(permissionsIds)) {
+            List<SysRolePermission> sysRolePermissions = permissionsIds.stream().map(permissionId -> {
+                SysRolePermission sysRolePermission = SysRolePermission.builder().id(idWorker.nextId())
+                        .roleId(vo.getId()).permissionId(permissionId).createTime(new Date()).build();
                 return sysRolePermission;
             }).collect(Collectors.toList());
             int count = sysRolePermissionMapper.addRolePermissionBatch(sysRolePermissions);

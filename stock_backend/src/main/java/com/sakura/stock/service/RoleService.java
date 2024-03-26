@@ -40,4 +40,11 @@ public interface RoleService {
      * @return
      */
     R<Set<String>> getPermissionIdsByRoleId(String roleId);
+
+    /**
+     * 编辑角色
+     * @param vo
+     * @return
+     */
+    R<String> editRoleWithPermissions(RoleAddVo vo);
 }

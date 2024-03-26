@@ -2,6 +2,8 @@ package com.sakura.stock.pojo.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -9,6 +11,7 @@ import lombok.Data;
  * @TableName sys_user_role
  */
 @Data
+@Builder
 public class SysUserRole implements Serializable {
     /**
      * 主键

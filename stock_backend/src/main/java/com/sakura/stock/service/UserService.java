@@ -74,4 +74,19 @@ public interface UserService {
      * @return
      */
     R<UserInfoDomain> getUserById(String id);
+
+    /**
+     * 获取所有角色信息和当前用户的角色信息
+     * @param userId
+     * @return
+     */
+    R<Map<String, List>> getUserRoleInfo(String userId);
+
+    /**
+     * 编辑用户角色信息
+     * @param userId 用户id
+     * @param roleIds 角色id列表
+     * @return
+     */
+    R<String> editUserRoleInfo(String userId, List<String> roleIds);
 }

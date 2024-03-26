@@ -16,6 +16,14 @@ import java.util.List;
 @ApiModel(description = "角色添加VO")
 @Data
 public class RoleAddVo {
+
+    /**
+     * 角色id
+     */
+    @ApiModelProperty("角色id")
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
+
     /**
      * 角色名称
      */

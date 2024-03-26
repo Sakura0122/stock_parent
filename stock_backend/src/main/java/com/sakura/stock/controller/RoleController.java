@@ -76,6 +76,23 @@ public class RoleController {
     }
 
     /**
+     * 编辑角色
+     * @param vo
+     * @return
+     */
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "body", dataType = "RoleAddVo", name = "vo", value = "", required = true)
+    })
+    @ApiOperation(value = "编辑角色", notes = "编辑角色", httpMethod = "PUT")
+    @PutMapping("/role")
+    public R<String> editRoleWithPermission(@RequestBody RoleAddVo vo) {
+        if (vo == null || StringUtils.isBlank(vo.getName()) || vo.getId() == null) {
+            return R.error("参数不能为空");
+        }
+        return roleService.editRoleWithPermissions(vo);
+    }
+
+    /**
      * 删除角色
      *
      * @param id 角色id

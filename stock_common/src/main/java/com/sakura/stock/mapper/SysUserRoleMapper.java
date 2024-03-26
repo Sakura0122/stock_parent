@@ -1,6 +1,9 @@
 package com.sakura.stock.mapper;
 
 import com.sakura.stock.pojo.entity.SysUserRole;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
 * @author sakura
@@ -22,4 +25,24 @@ public interface SysUserRoleMapper {
 
     int updateByPrimaryKey(SysUserRole record);
 
+    /**
+     * 获取用户所有的角色id
+     * @param userId
+     * @return
+     */
+    List<String> getUserRoleId(@Param("userId") String userId);
+
+    /**
+     * 删除用户的角色
+     * @param userId
+     * @return
+     */
+    int deleteByUserId(@Param("userId") String userId);
+
+    /**
+     * 批量插入用户角色
+     * @param list
+     * @return
+     */
+    int insertBatch(@Param("userRoles") List<SysUserRole> list);
 }

@@ -14,6 +14,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -122,6 +123,7 @@ public class UserController {
 
     /**
      * 获取用户信息
+     *
      * @param id 用户id
      * @return
      */
@@ -134,7 +136,45 @@ public class UserController {
     }
 
     /**
+     * 获取所有角色信息和当前用户的角色信息
+     *
+     * @param userId
+     * @return
+     */
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "path", dataType = "string", name = "userId", value = "", required = true)
+    })
+    @ApiOperation(value = "获取所有角色信息和当前用户的角色信息", notes = "获取所有角色信息和当前用户的角色信息", httpMethod = "GET")
+    @GetMapping("/user/role/{userId}")
+    public R<Map<String, List>> getUserRoleInfo(@PathVariable("userId") String userId) {
+        if (StringUtils.isBlank(userId)) {
+            return R.error("参数不能为空");
+        }
+        return userService.getUserRoleInfo(userId);
+    }
+
+    /**
+     * 编辑用户角色信息
+     * @param payload
+     * @return
+     */
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "body", dataType = "Map<String, Object>", name = "payload", value = "", required = true)
+    })
+    @ApiOperation(value = "编辑用户角色信息", notes = "编辑用户角色信息", httpMethod = "PUT")
+    @PutMapping("/user/role")
+    public R<String> editUserRoleInfo(@RequestBody Map<String, Object> payload) {
+        if (payload.get("roleIds") == null || payload.get("userId") == null) {
+            return R.error("参数不能为空");
+        }
+        String userId = (String) payload.get("userId");
+        List<String> roleIds = (List<String>) payload.get("roleIds");
+        return userService.editUserRoleInfo(userId, roleIds);
+    }
+
+    /**
      * 批量删除用户
+     *
      * @param userIds 用户id集合
      * @return
      */

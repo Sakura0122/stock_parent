@@ -39,4 +39,10 @@ public interface SysRolePermissionMapper {
      * @return
      */
     Set<String> getPermissionIdsByRoleId(@Param("roleId") String roleId);
+
+    /**
+     * 根据角色id删除数据
+     * @param roleId 角色id
+     */
+    void deleteByRoleId(@Param("roleId") String roleId);
 }
