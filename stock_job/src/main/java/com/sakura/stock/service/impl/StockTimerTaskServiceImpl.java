@@ -2,6 +2,7 @@ package com.sakura.stock.service.impl;
 
 import cn.hutool.core.collection.ListUtil;
 import com.sakura.stock.constant.ParseType;
+import com.sakura.stock.face.StockCacheFace;
 import com.sakura.stock.mapper.StockBusinessMapper;
 import com.sakura.stock.mapper.StockMarketIndexInfoMapper;
 import com.sakura.stock.mapper.StockRtInfoMapper;
@@ -72,6 +73,9 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
      */
     @Resource
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
+    @Resource
+    private StockCacheFace stockCacheFace;
 
     /**
      * 必须保障该对象无状态
@@ -177,10 +181,13 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
     @Override
     public void getStockRtIndex() {
         // 1.获取个股编码的集合
-        List<String> allStockCodes = stockBusinessMapper.getAllStockCodes();
-        allStockCodes = allStockCodes.stream()
-                .map(item -> item.startsWith("6") ? "sh" + item : "sz" + item)
-                .collect(Collectors.toList());
+        // List<String> allStockCodes = stockBusinessMapper.getAllStockCodes();
+        // allStockCodes = allStockCodes.stream()
+        //         .map(item -> item.startsWith("6") ? "sh" + item : "sz" + item)
+        //         .collect(Collectors.toList());
+
+        List<String> allStockCodes = stockCacheFace.getAllStockCodeWithPrefix();
+
         // 将所有个股编码组成大的集合分成若干小集合 分批次拉取数据
         long startTime = System.currentTimeMillis();
         ListUtil.split(allStockCodes, 15).forEach(item -> {
@@ -235,7 +242,7 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
             // }).start();
 
             // 方案2：引入线程池
-            threadPoolTaskExecutor.execute(() ->{
+            threadPoolTaskExecutor.execute(() -> {
                 String url = stockInfoConfig.getMarketUrl() + String.join(",", item);
                 // 发起请求
                 ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
@@ -258,10 +265,10 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
                 } else {
                     log.info("当前时间：{},插入数据：{},成功", DateTime.now().toString("yyyy-MM-dd HH:mm:ss"), list);
                 }
-            } );
+            });
         });
         long time = System.currentTimeMillis() - startTime;
-        log.info("采集花费时间：{}ms",time);
+        log.info("采集花费时间：{}ms", time);
     }
 
     /**
