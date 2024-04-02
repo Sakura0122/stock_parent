@@ -4,6 +4,7 @@ import com.sakura.stock.pojo.domain.PermissionInfoDomain;
 import com.sakura.stock.pojo.entity.SysPermission;
 import com.sakura.stock.vo.req.PermissionAddVo;
 import com.sakura.stock.vo.resp.R;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -29,6 +30,12 @@ public interface PermissionService {
     List<PermissionInfoDomain> getTree(List<SysPermission> permissions, String pid, boolean isOnlyMenu);
 
     /**
+     * 获取菜单
+     * @return
+     */
+    List<String> getMenu();
+
+    /**
      * 新增权限
      * @param vo
      * @return
@@ -48,4 +55,10 @@ public interface PermissionService {
      * @return
      */
     R<String> editPermission(PermissionAddVo vo);
+
+    /**
+     * 根据用户id查询用户信息
+     * @return
+     */
+    List<SysPermission> getPermissionByUserId(long id);
 }

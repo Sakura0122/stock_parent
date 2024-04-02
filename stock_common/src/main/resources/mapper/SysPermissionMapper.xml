@@ -45,6 +45,23 @@
     select count(*) from sys_permission where pid = #{permissionId} and deleted = 1
   </select>
 
+  <select id="getPermissionByUserId" resultType="com.sakura.stock.pojo.entity.SysPermission">
+    SELECT
+      distinct  p.*
+    FROM
+      sys_role_permission AS rp,
+      sys_user_role AS ur,
+      sys_permission AS p
+    WHERE
+      ur.role_id = rp.role_id
+      AND rp.permission_id = p.id
+      AND ur.user_id = #{userId}
+  </select>
+
+  <select id="getMenu" resultType="java.lang.String">
+    select code from sys_permission where type in (1,2)
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     update sys_permission
     set deleted = 0

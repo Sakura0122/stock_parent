@@ -37,4 +37,11 @@ public interface SysRoleMapper {
      * @return
      */
     int deleteRoleById(@Param("id") Long id);
+
+    /**
+     * 根据用户id查询角色信息
+     * @param userId
+     * @return
+     */
+    List<SysRole> getRoleByUserId(@Param("userId") Long userId);
 }

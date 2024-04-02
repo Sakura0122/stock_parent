@@ -37,4 +37,17 @@ public interface SysPermissionMapper {
      * @return
      */
     int findChildrenByParentId(@Param("permissionId") String permissionId);
+
+    /**
+     * 根据用户id查询用户信息
+     * @param id
+     * @return
+     */
+    List<SysPermission> getPermissionByUserId(@Param("userId") long id);
+
+    /**
+     * 获取所有菜单
+     * @return
+     */
+    List<String> getMenu();
 }

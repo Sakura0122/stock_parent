@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -32,6 +33,7 @@ public class PermissionController {
      *
      * @return
      */
+    @PreAuthorize("hasAuthority('btn-permission-list')")
     @ApiOperation(value = "获取权限", notes = "获取权限", httpMethod = "GET")
     @GetMapping("/permission")
     public R<List<PermissionInfoDomain>> permission() {

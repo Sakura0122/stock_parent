@@ -54,11 +54,11 @@ public class UserController {
      * @param vo
      * @return
      */
-    @ApiOperation(value = "用户登录")
-    @PostMapping("/login")
-    public R<LoginRespVo> login(@RequestBody LoginReqVo vo) {
-        return userService.login(vo);
-    }
+    // @ApiOperation(value = "用户登录")
+    // @PostMapping("/login")
+    // public R<LoginRespVo> login(@RequestBody LoginReqVo vo) {
+    //     return userService.login(vo);
+    // }
 
     /**
      * 生成图片验证码

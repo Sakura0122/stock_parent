@@ -23,7 +23,7 @@
   </resultMap>
 
   <sql id="Base_Column_List">
-    id,username,
+    id,username,password,
         phone,real_name,nick_name,
         email,status,sex,
         deleted,create_id,update_id,

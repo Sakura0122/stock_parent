@@ -21,8 +21,10 @@ public class TestPasswordEncoder {
      */
     @Test
     public void testPasswordEncoder(){
-        String encode = passwordEncoder.encode("123456");
-        System.out.println(encode); // $2a$10$WnS1FWPCS8CowSCmsohJ4..OV.5VcUDOejWmn.6Neob.v5WemV9oO
+        for (int i = 0; i < 5; i++) {
+            String encode = passwordEncoder.encode("123456");
+            System.out.println(encode);// $2a$10$WnS1FWPCS8CowSCmsohJ4..OV.5VcUDOejWmn.6Neob.v5WemV9oO
+        }
     }
 
     /**

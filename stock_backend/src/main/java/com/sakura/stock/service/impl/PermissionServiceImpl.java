@@ -47,6 +47,15 @@ public class PermissionServiceImpl implements PermissionService {
         return R.ok(tree);
     }
 
+    /**
+     * 获取所有菜单
+     * @return
+     */
+    public List<String> getMenu(){
+        List<String> data = sysPermissionMapper.getMenu();
+        return data;
+    }
+
 
     /**
      * 新增权限
@@ -120,6 +129,15 @@ public class PermissionServiceImpl implements PermissionService {
             return R.error("编辑失败");
         }
         return R.ok("编辑成功");
+    }
+
+    /**
+     * 根据用户id查询用户信息
+     * @return
+     */
+    @Override
+    public List<SysPermission> getPermissionByUserId(long id) {
+        return sysPermissionMapper.getPermissionByUserId(id);
     }
 
     /**
